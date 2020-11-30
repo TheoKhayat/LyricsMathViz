@@ -1,14 +1,8 @@
-import os, config
+import os
 from num2words import num2words
-from sqlalchemy import create_engine
-from sqlalchemy.schema import Table, MetaData
-# import pymongo # or use sql^
+from config import DATA_PATH, CLEANED_DATA_PATH, engine, artistsTable
 
-
-engine = create_engine(config.CONN_STRING)
-artistsTable = Table('artists', MetaData(), autoload=True, autoload_with=engine)
 db_connection = engine.connect()
-
 
 def cleanKaggleLyrics(lyricsStr):
 	wordsList = lyricsStr.replace('\n', ' ').replace('-', ' ').lower().split()
@@ -23,21 +17,27 @@ def cleanKaggleLyrics(lyricsStr):
 			cleanLyrics.append(cleanedWord)
 	return ' '.join(cleanLyrics)
 
-for fileName in os.listdir(config.DATA_PATH):
-	artistName = fileName.rstrip('.txt').replace('-', '_')
-	filePath = config.DATA_PATH + fileName
-	print('reading:', filePath)
-	with open(filePath) as lyrics:
-		lyricsStr = lyrics.read()
-		cleanedLyricsStr = cleanKaggleLyrics(lyricsStr)
-		db_connection.execute(
-            artistsTable.insert().values(
-                artist_name = artistName
-                ,kaggle_lyrics = lyricsStr
-                ,kaggle_lyrics_cleaned = cleanedLyricsStr))
-	print(artistName, 'inserted!')
-	with open(config.CLEANED_DATA_PATH + artistName + '.txt', 'w') as cleanedLyrics:
-		cleanedLyrics.write(cleanedLyricsStr)
-	print(artistName, 'written to clean_data/')
+try:
+	if __name__ == '__main__':
 
-engine.dispose()
+		for fileName in os.listdir(DATA_PATH):
+			artistName = fileName.rstrip('.txt').replace('-', '_')
+			filePath = DATA_PATH + fileName
+			print('reading:', filePath)
+			with open(filePath) as lyrics:
+				lyricsStr = lyrics.read()
+				cleanedLyricsStr = cleanKaggleLyrics(lyricsStr)
+				db_connection.execute(
+		            artistsTable.insert().values(
+		                artist_name = artistName
+		                ,kaggle_lyrics = lyricsStr
+		                ,kaggle_lyrics_cleaned = cleanedLyricsStr))
+			print(artistName, 'inserted!')
+			with open(CLEANED_DATA_PATH + artistName + '.txt', 'w') as cleanedLyrics:
+				cleanedLyrics.write(cleanedLyricsStr)
+			print(artistName, 'written to clean_data/')
+
+except Exception as e:
+	print('Something broke cleaning...', e)
+finally:
+	engine.dispose()

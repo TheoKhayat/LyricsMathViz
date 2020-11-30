@@ -1,17 +1,28 @@
-# Lyrics Math & Viz :)
+# Lyrics Math & Viz <3
 
-Using kaggle lyrics data & DataMuse API <3
+Using kaggle lyrics data :)
 
-CREATE TABLE artists (
-  artist_name VARCHAR PRIMARY KEY,
-  kaggle_lyrics TEXT DEFAULT NULL,
-  kaggle_lyrics_cleaned TEXT DEFAULT NULL
-);
-
-Also:
+word -> DataMuse API -> PostgreSQL ARRAY/JSONB
 
 {
  word: <str> ,
  syllables: <int>
  rhyming_words: [<words>]
+ datamuse_searched: <bool>
 }
+
+=>
+
+CREATE TABLE words (
+  word VARCHAR PRIMARY KEY,
+  syllables INTEGER DEFAULT NULL,
+  rhyming_words VARCHAR[],
+  datamuse_searched BOOL DEFAULT FALSE
+ );
+
+
+Artists -> SQLAlchemy -> PostgreSQL
+ARTISTS
+- artist_name
+- songs[]
+- words{}
