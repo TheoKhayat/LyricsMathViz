@@ -2,7 +2,7 @@ from requests import get
 from sqlalchemy import create_engine, select, update
 from sqlalchemy.schema import Table, MetaData
 
-engine = create_engine('postgresql://postgres:Theophile23@localhost:5432/moar_data')
+engine = create_engine('postgresql://<USERNAME>:<PASSWORD>@localhost:5432/moar_data')
 wordsTable = Table('words', MetaData(), autoload=True, autoload_with=engine)
 db_connection = engine.connect()
 
