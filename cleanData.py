@@ -23,7 +23,6 @@ try:
 		for fileName in os.listdir(DATA_PATH):
 			artistName = fileName.rstrip('.txt').replace('-', '_')
 			filePath = DATA_PATH + fileName
-			print('reading:', filePath)
 			with open(filePath) as lyrics:
 				lyricsStr = lyrics.read()
 				cleanedLyricsStr = cleanKaggleLyrics(lyricsStr)
@@ -32,10 +31,8 @@ try:
 		                artist_name = artistName
 		                ,kaggle_lyrics = lyricsStr
 		                ,kaggle_lyrics_cleaned = cleanedLyricsStr))
-			print(artistName, 'inserted!')
 			with open(CLEANED_DATA_PATH + artistName + '.txt', 'w') as cleanedLyrics:
 				cleanedLyrics.write(cleanedLyricsStr)
-			print(artistName, 'written to clean_data/')
 
 except Exception as e:
 	print('Something broke cleaning...', e)

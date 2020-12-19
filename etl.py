@@ -1,9 +1,8 @@
 from requests import get
 from sqlalchemy import create_engine, select, update
 from sqlalchemy.schema import Table, MetaData
+from config import engine, wordsTable
 
-engine = create_engine('postgresql://<USERNAME>:<PASSWORD>@localhost:5432/moar_data')
-wordsTable = Table('words', MetaData(), autoload=True, autoload_with=engine)
 db_connection = engine.connect()
 
 
