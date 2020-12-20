@@ -1,6 +1,5 @@
 from flask import Flask
-#from datetime import datetime
-from config import engine#, artistsTable
+from config import engine
 
 db_connection = engine.connect()
 app = Flask('myApp')
@@ -17,11 +16,6 @@ def getHandler(artist):
 		viz_time: {punctuations: {',;'".?!$#@&}}
 		viz_rapper: f(math...)
     '''
-
-@app.route('/post/<artist_upload>')
-def postHandler(artist_upload):
-	return 'Handling upload: ' + artist_upload
-
 
 try:
 	if __name__ == '__main__':

@@ -22,14 +22,15 @@ def insertIntoWords(thisWord, syllableCount=None, rhymeList=[], searched=False):
                 ,rhyming_words = rhymeList
                 ,datamuse_searched = searched))
     else:
-        updatedRhymesList = list(set(existingRhymes[2]) | set(rhymeList))
+        (word, syllables, existingRhymingWords, datamuseSearched) = existingRhymes
+        updatedRhymesList = list( set(existingRhymingWords) | set(rhymeList) )
         db_connection.execute(
             update(wordsTable)
                 .where(wordsTable.c.word == thisWord)
                 .values(
-                    syllables = syllableCount if syllableCount else existingRhymes[1]
+                    syllables = syllableCount if syllableCount else syllables
                     ,rhyming_words = updatedRhymesList
-                    ,datamuse_searched = searched or existingRhymes[3]))               
+                    ,datamuse_searched = searched or datamuseSearched))               
 
 def getRhymes(word): # GET request to datamuse API -> insert/update Postgres
     rhymes = get('https://api.datamuse.com/words?max=1000&rel_rhy=' + word).json()
