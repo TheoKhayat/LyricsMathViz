@@ -1,8 +1,5 @@
 from requests import get
-from boto3 import resource
-
-wordsDB = resource('dynamodb').Table('words')
-artistsDB = resource('dynamodb').Table('artists')
+from config import wordsDB, artistsDB
 
 
 def wordCount(lyrics):
@@ -76,4 +73,3 @@ except Exception as e:
     print('Something broke...', e)
 finally:
     print('done :)')
-    # engine.dispose()

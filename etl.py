@@ -41,12 +41,11 @@ def getRhymes(word): # GET request to datamuse API -> insert/update Postgres
 
 def blastOff(artistName=None): # main entrypoint
     if artistName:
-        localFilePath = f'/Users/theo/Rhymes/LyricsMathViz/cleaned_data/{artistName}.txt'
-        wordsToGet = set(open(localFilePath).read().split())
+        wordsToGet = set(open(f'/Users/theo/Rhymes/LyricsMathViz/cleaned_data/{artistName}.txt').read().split())
     else:
         wordsToGet = [word[0] for word in db_connection.execute(
-            select([wordsTable]).where(
-                wordsTable.columns.datamuse_searched == False)).fetchall()]
+            select([wordsTable])
+                .where(not wordsTable.columns.datamuse_searched)).fetchall()]
     for word in wordsToGet:
         getRhymes(word)
 
