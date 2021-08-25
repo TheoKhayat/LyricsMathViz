@@ -26,7 +26,7 @@ def insertIntoWords(thisWord, syllableCount=None, rhymeList=[], searched=False):
         updatedRhymesList = list( set(existingRhymingWords) | set(rhymeList) )
         db_connection.execute(
             update(wordsTable)
-                .where(wordsTable.c.word == thisWord)
+                .where(wordsTable.columns.word == thisWord)
                 .values(
                     syllables = syllableCount if syllableCount else syllables
                     ,rhyming_words = updatedRhymesList

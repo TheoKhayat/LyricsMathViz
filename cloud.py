@@ -1,6 +1,6 @@
 from requests import get
 from config import wordsDB, artistsDB
-
+from boto3.dynamodb.conditions import Attr
 
 def wordCount(lyrics):
     splitLyrics = lyrics.split()
@@ -31,9 +31,9 @@ def getWordFromDynamoWords(getWord): # if word exists in Dynamo then return reco
     return wordInDB['Item'] if 'Item' in wordInDB else None
 
 def insertIntoDynamoWords(thisWord, syllableCount=None, rhymeList=[], searched=False):
-    print('doin', thisWord)
     existingRhymes = getWordFromDynamoWords(thisWord)
     if not existingRhymes:
+        print('inserting:', thisWord)
         wordsDB.put_item(
             Item = {
                 'word': thisWord,
@@ -41,31 +41,44 @@ def insertIntoDynamoWords(thisWord, syllableCount=None, rhymeList=[], searched=F
                 'rhyming_words': rhymeList,
                 'datamuse_searched': searched})
     else:
-        wordsDB.update_item(
-            Key = {'word': thisWord},
-            UpdateExpression = 'SET syllables=:s, rhyming_words=:r, datamuse_searched=:d',
-            ExpressionAttributeValues = {
-                ':s': syllableCount if syllableCount else existingRhymes['syllables'],
-                ':r': list( set(existingRhymes['rhyming_words']) | set(rhymeList) ),
-                ':d': searched or existingRhymes['datamuse_searched']})
+        updateFields = []
+        expressionAttributeValues = {}
 
-def getRhymes(word): # GET request to datamuse API -> insert/update Dynamo
-    rhymes = get('https://api.datamuse.com/words?max=1000&rel_rhy=' + word).json()
-    rhymeList = [rhyme['word'] for rhyme in rhymes]
-    insertIntoDynamoWords(word, rhymeList=rhymeList, searched=True)
-    for rhyme in rhymes:
-        insertIntoDynamoWords(rhyme['word'], rhyme['numSyllables'], rhymeList)
+        if not existingRhymes['syllables'] and syllableCount:
+            updateFields.append('syllables=:s')
+            expressionAttributeValues[':s'] = syllableCount
+
+        if not existingRhymes['datamuse_searched'] and searched:
+            updateFields.append('datamuse_searched=:d')
+            expressionAttributeValues[':d'] = True
+
+        allRhymes = set(existingRhymes['rhyming_words']) | set(rhymeList)
+        if len(allRhymes) > len(existingRhymes['rhyming_words']):
+            updateFields.append('rhyming_words=:r')
+            expressionAttributeValues[':r'] = list(allRhymes)
+
+        if updateFields:
+            print('updating:', thisWord, updateFields)
+            wordsDB.update_item(
+                Key = {'word': thisWord},
+                UpdateExpression = 'SET ' + ','.join(updateFields),
+                ExpressionAttributeValues = expressionAttributeValues)
+
+def getRhymes(responseItems): # GET request to datamuse API -> insert/update Dynamo
+    for rhymeRecord in responseItems:
+        word = rhymeRecord['word']
+        rhymes = get('https://api.datamuse.com/words?max=1000&rel_rhy=' + word).json()
+        rhymeList = [rhyme['word'] for rhyme in rhymes]
+        insertIntoDynamoWords(word, rhymeList=rhymeList, searched=True)
+        for rhyme in rhymes:
+            insertIntoDynamoWords(rhyme['word'], rhyme['numSyllables'], rhymeList)
 
 def getWords():
-    response = wordsDB.scan()
-    for word in response['Items']:
-        if not word['datamuse_searched']:
-            getRhymes(word['word'])
+    response = wordsDB.scan(FilterExpression=Attr('datamuse_searched').eq(False))
+    getRhymes(response['Items'])
     while 'LastEvaluatedKey' in response:
-        response = wordsDB.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-        for word in response['Items']:
-            if not word['datamuse_searched']:
-                getRhymes(word['word'])
+        response = wordsDB.scan(FilterExpression=Attr('datamuse_searched').eq(False), ExclusiveStartKey=response['LastEvaluatedKey'])
+        getRhymes(response['Items'])
 
 try:
     getWords()
