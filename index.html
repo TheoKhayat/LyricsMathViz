@@ -3,11 +3,6 @@
     <head>
         <title>Rhyme Viz <3</title>
         <script src='https://cdn.plot.ly/plotly-2.3.1.min.js'></script>
-        <style type="text/css">
-            body {
-                align-content: center;
-            }
-        </style>
     </head>
     <body>
         <h5>Enter Words To Rhyme Seperated By ,'s</h5>
@@ -20,20 +15,21 @@
         <br>
         <button onClick='blastoff()'>Rap Dreams</button>
         <div id='viz'></div>
+        <div id='allRhymes'></div>
 
         <script type='application/javascript'>
-            const url = 'https://kq2zn1did0.execute-api.us-east-1.amazonaws.com/default/getWords'
+            const url = 'https://kq2zn1did0.execute-api.us-east-1.amazonaws.com/default/getWords';
+            var apiResponse = null;
 
             function blastoff(){
                 const wordsToRhyme = document.getElementById('wordsIn').value.split(' ').join('').toLowerCase();
                 const nGramsIncluded = document.getElementById('nGrams').checked;
                 var getUrl = url + '?w=' + wordsToRhyme;
-                if (nGramsIncluded) {
-                    getUrl = getUrl + '&include_n_grams=yes';
-                };
+                if (nGramsIncluded) { getUrl += '&include_n_grams=yes' };
                 fetch(getUrl)
                     .then( response => response.json() )
                     .then( data => {
+                        document.getElementById('allRhymes').innerHTML = '';
                         const words = wordsToRhyme.split(',');
                         const rhymes = words.map(e => data[e] ? data[e].rhymes.length : 0);
                         const vizData = [{
@@ -41,8 +37,20 @@
                             y: rhymes,
                             type: 'bar'
                         }];
-                        console.log('vizData:', vizData);
+
                         Plotly.newPlot('viz', vizData);
+
+                        apiResponse = data;
+                        
+                        document.getElementById('viz')
+                            .on('plotly_click', e => {
+                                const clickedWord = e.points[0].x;
+                                const clickedRhymes = apiResponse[clickedWord].rhymes;
+                                var msg = `${clickedRhymes.length} words rhyme with ${clickedWord}`;
+                                msg += '\n==================\n';
+                                msg += clickedRhymes.join(', ');
+                                document.getElementById('allRhymes').innerText = msg;
+                            });
                     });
             };
         </script>

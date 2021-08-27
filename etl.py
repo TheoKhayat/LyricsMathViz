@@ -1,5 +1,5 @@
 from requests import get
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import select, update
 from sqlalchemy.schema import Table, MetaData
 from config import engine, wordsTable
 

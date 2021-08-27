@@ -1,5 +1,6 @@
 from requests import get
 from config import wordsDB, artistsDB
+from etl import db_connection
 from boto3.dynamodb.conditions import Attr
 
 def wordCount(lyrics):
@@ -7,7 +8,7 @@ def wordCount(lyrics):
     return {word: splitLyrics.count(word) for word in splitLyrics}
 
 def artistsToDynamo():
-    for row in connection.execute('SELECT * FROM artists').fetchall():
+    for row in db_connection.execute('SELECT * FROM artists').fetchall():
         (artistName, dirtyData, cleanedData) = row
         artistsDB.put_item(
             Item = {
@@ -17,7 +18,7 @@ def artistsToDynamo():
                 'word_count': wordCount(cleanedData)})
 
 def wordsToDynamo():
-    for row in connection.execute('SELECT * FROM words').fetchall():
+    for row in db_connection.execute('SELECT * FROM words').fetchall():
         (word, syllables, rhyming_words, datamuse_searched) = row
         wordsDB.put_item(
             Item = {
