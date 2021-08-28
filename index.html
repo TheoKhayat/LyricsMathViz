@@ -38,8 +38,9 @@
                             y: rhymes,
                             type: 'bar'
                         }];
+                        const label = {title: {text: 'Rhymes Found Per Word (click bar to see all!)'}};
 
-                        Plotly.newPlot('viz', vizData);
+                        Plotly.newPlot('viz', vizData, label);
 
                         apiResponse = data;
                         
