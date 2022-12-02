@@ -20,9 +20,8 @@
 
         <script type='application/javascript'>
             const url = 'https://kq2zn1did0.execute-api.us-east-1.amazonaws.com/default/getWords';
-            var apiResponse = null;
 
-            function blastoff(){
+            function blastoff() {
                 const wordsToRhyme = document.getElementById('wordsIn').value.split(' ').join('').toLowerCase();
                 const nGramsIncluded = document.getElementById('nGrams').checked;
                 var getUrl = url + '?w=' + wordsToRhyme;
@@ -41,13 +40,11 @@
                         const label = {title: {text: 'Rhymes Found Per Word (click bar to see all!)'}};
 
                         Plotly.newPlot('viz', vizData, label);
-
-                        apiResponse = data;
                         
                         document.getElementById('viz')
                             .on('plotly_click', e => {
                                 const clickedWord = e.points[0].x;
-                                const clickedRhymes = apiResponse[clickedWord].rhymes;
+                                const clickedRhymes = data[clickedWord].rhymes;
                                 var msg = `${clickedRhymes.length} words rhyme with ${clickedWord}`;
                                 msg += '\n==================\n';
                                 msg += clickedRhymes.join(', ');
