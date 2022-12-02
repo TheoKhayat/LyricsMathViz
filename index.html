@@ -14,14 +14,14 @@
             Include n-grams
         </div>
         <br>
-        <button onClick='blastoff()'>Rap Dreams</button>
+        <button onclick='getRhymes()'>Rap Dreams</button>
         <div id='viz'></div>
         <div id='allRhymes'></div>
 
         <script type='application/javascript'>
             const url = 'https://kq2zn1did0.execute-api.us-east-1.amazonaws.com/default/getWords';
 
-            function blastoff() {
+            function getRhymes() {
                 const wordsToRhyme = document.getElementById('wordsIn').value.split(' ').join('').toLowerCase();
                 const nGramsIncluded = document.getElementById('nGrams').checked;
                 var getUrl = url + '?w=' + wordsToRhyme;
